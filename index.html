@@ -1,0 +1,1303 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Outros modelos NoSQL — apresentação interativa</title>
+  <meta name="description" content="Seminário interativo sobre grafos, chave-valor e colunas largas.">
+  <style>
+    :root {
+      --u: min(1vw, 1.777vh);
+      --bg: #06121f;
+      --panel: #0b1d2e;
+      --panel2: #102941;
+      --line: #24506a;
+      --ink: #e9f7fa;
+      --mut: #9fb9c5;
+      --cyan: #28d9df;
+      --blue: #4c9fff;
+      --lime: #70e0a2;
+      --amber: #ffc65a;
+      --pink: #ff7799;
+      --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+      --sans: Inter, ui-sans-serif, system-ui, sans-serif
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--sans)
+    }
+
+    body:before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at 12% 0%, #0e455d88, transparent 33%), radial-gradient(circle at 100% 100%, #123c5c88, transparent 35%), linear-gradient(#ffffff06 1px, transparent 1px), linear-gradient(90deg, #ffffff06 1px, transparent 1px);
+      background-size: auto, auto, 42px 42px, 42px 42px;
+      pointer-events: none
+    }
+
+    .scene {
+      display: none;
+      position: absolute;
+      inset: 0;
+      padding: calc(var(--u)*3.2) calc(var(--u)*5);
+      flex-direction: column;
+      justify-content: center;
+      gap: calc(var(--u)*1.15)
+    }
+
+    .scene.active {
+      display: flex;
+      animation: in .45s ease
+    }
+
+    .scene.center {
+      align-items: center;
+      text-align: center
+    }
+
+    @keyframes in {
+      from {
+        opacity: 0;
+        transform: translateY(12px)
+      }
+
+      to {
+        opacity: 1;
+        transform: none
+      }
+    }
+
+    .eyebrow,
+    .kicker {
+      font: 700 calc(var(--u)*1.4) var(--mono);
+      letter-spacing: .16em;
+      color: var(--cyan);
+      text-transform: uppercase
+    }
+
+    .title {
+      font-size: calc(var(--u)*5.6);
+      line-height: .98;
+      letter-spacing: -.045em;
+      max-width: 17ch;
+      margin: 0
+    }
+
+    .title span {
+      color: var(--cyan)
+    }
+
+    .lead {
+      font-size: calc(var(--u)*2.3);
+      line-height: 1.35;
+      color: var(--mut);
+      max-width: 48ch
+    }
+
+    .accent {
+      color: var(--cyan)
+    }
+
+    .small {
+      font-size: calc(var(--u)*1.5);
+      color: var(--mut);
+      line-height: 1.45
+    }
+
+    .mono {
+      font-family: var(--mono)
+    }
+
+    .grid {
+      display: grid;
+      gap: calc(var(--u)*1.2)
+    }
+
+    .cols2 {
+      grid-template-columns: 1fr 1fr
+    }
+
+    .cols3 {
+      grid-template-columns: repeat(3, 1fr)
+    }
+
+    .card {
+      position: relative;
+      background: linear-gradient(135deg, #123148e8, #081826e8);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: calc(var(--u)*1.55);
+      overflow: hidden
+    }
+
+    .card:before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: var(--cyan)
+    }
+
+    .card h3 {
+      margin: .1em 0 .35em;
+      font-size: calc(var(--u)*2.35)
+    }
+
+    .card p,
+    .card li {
+      font-size: calc(var(--u)*1.58);
+      line-height: 1.35;
+      color: var(--mut)
+    }
+
+    .card ul {
+      margin: .5em 0 0;
+      padding-left: 1em
+    }
+
+    .num {
+      font: 700 calc(var(--u)*3.5) var(--mono);
+      color: var(--cyan)
+    }
+
+    .tag {
+      font: 700 calc(var(--u)*1.3) var(--mono);
+      letter-spacing: .1em;
+      color: var(--cyan)
+    }
+
+    .reveal {
+      opacity: .14;
+      transform: translateY(14px);
+      transition: .45s
+    }
+
+    .reveal.show {
+      opacity: 1;
+      transform: none
+    }
+
+    .diagram {
+      position: relative;
+      min-height: calc(var(--u)*30);
+      border: 1px solid var(--line);
+      background: #061827bb;
+      border-radius: 24px;
+      overflow: hidden
+    }
+
+    .node {
+      position: absolute;
+      min-width: calc(var(--u)*10);
+      padding: calc(var(--u)*1) calc(var(--u)*1.4);
+      border: 1px solid var(--cyan);
+      border-radius: 999px;
+      background: #0c3247;
+      color: #fff;
+      text-align: center;
+      font-size: calc(var(--u)*2);
+      box-shadow: 0 0 25px #28d9df33
+    }
+
+    .node.hot {
+      background: var(--cyan);
+      color: #05212b;
+      box-shadow: 0 0 30px var(--cyan)
+    }
+
+    .edge {
+      position: absolute;
+      height: 3px;
+      background: var(--cyan);
+      transform-origin: left center;
+      opacity: .72
+    }
+
+    .edge:after {
+      content: "›";
+      position: absolute;
+      right: -4px;
+      top: -14px;
+      font-size: 25px;
+      color: var(--cyan)
+    }
+
+    .edge-label {
+      position: absolute;
+      color: var(--mut);
+      font: 700 calc(var(--u)*1.35) var(--mono);
+      letter-spacing: .08em
+    }
+
+    .query {
+      background: #06121f;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: calc(var(--u)*1.3);
+      font: calc(var(--u)*1.65) var(--mono);
+      line-height: 1.6;
+      white-space: pre-wrap
+    }
+
+    .query b {
+      color: var(--cyan)
+    }
+
+    .terminal {
+      height: calc(var(--u)*29);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #05101a;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden
+    }
+
+    .bar {
+      padding: .7em 1em;
+      background: #102438;
+      border-bottom: 1px solid var(--line);
+      font: calc(var(--u)*1.35) var(--mono);
+      color: var(--mut)
+    }
+
+    .screen {
+      flex: 1;
+      padding: 1em;
+      font: calc(var(--u)*1.65) var(--mono);
+      line-height: 1.55;
+      overflow: auto
+    }
+
+    .prompt {
+      color: var(--lime)
+    }
+
+    .cmdline {
+      display: flex;
+      gap: .5em;
+      border-top: 1px solid var(--line);
+      padding: .65em
+    }
+
+    .cmdline input {
+      flex: 1;
+      background: transparent;
+      border: 0;
+      color: #fff;
+      outline: 0;
+      font: calc(var(--u)*1.6) var(--mono)
+    }
+
+    button {
+      border: 1px solid var(--cyan);
+      border-radius: 9px;
+      background: #10374a;
+      color: var(--ink);
+      padding: .35em .7em;
+      font: 700 calc(var(--u)*1.4) var(--mono);
+      cursor: pointer
+    }
+
+    button:hover {
+      background: var(--cyan);
+      color: #06202b
+    }
+
+    .store {
+      height: calc(var(--u)*29);
+      overflow: auto
+    }
+
+    .entry {
+      margin-bottom: .7em;
+      background: #0d2a3d;
+      border-left: 4px solid var(--cyan);
+      padding: .65em .8em;
+      border-radius: 0 8px 8px 0;
+      font: calc(var(--u)*1.55) var(--mono)
+    }
+
+    .entry b {
+      color: var(--cyan)
+    }
+
+    .ttl {
+      float: right;
+      color: var(--amber)
+    }
+
+    .flow {
+      display: flex;
+      align-items: center;
+      gap: calc(var(--u)*1.3);
+      justify-content: center
+    }
+
+    .service {
+      width: calc(var(--u)*16);
+      min-height: calc(var(--u)*11);
+      padding: calc(var(--u)*1.2);
+      background: #0c2a3c;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: .3em;
+      font-size: calc(var(--u)*2)
+    }
+
+    .service.active {
+      border-color: var(--cyan);
+      background: #155069;
+      box-shadow: 0 0 25px #28d9df77
+    }
+
+    .service i {
+      font-style: normal;
+      font-size: calc(var(--u)*1.5);
+      color: var(--mut)
+    }
+
+    .arrow {
+      font-size: calc(var(--u)*3);
+      color: var(--cyan)
+    }
+
+    .controls {
+      display: flex;
+      gap: .7em;
+      justify-content: center
+    }
+
+    .result {
+      min-height: 2em;
+      color: var(--mut);
+      font-size: calc(var(--u)*2);
+      text-align: center
+    }
+
+    .pill {
+      display: inline-block;
+      margin: .2em;
+      padding: .3em .6em;
+      border: 1px solid var(--line);
+      border-radius: 99px;
+      color: var(--mut);
+      font: calc(var(--u)*1.35) var(--mono)
+    }
+
+    .partition {
+      background: #0b2639;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: calc(var(--u)*1.1);
+      min-height: calc(var(--u)*12)
+    }
+
+    .partition.active {
+      border-color: var(--cyan);
+      box-shadow: 0 0 22px #28d9df55
+    }
+
+    .partition h4 {
+      margin: 0 0 .6em;
+      color: var(--cyan);
+      font: 700 calc(var(--u)*1.55) var(--mono)
+    }
+
+    .rowdata {
+      padding: .35em;
+      background: #143750;
+      border-radius: 5px;
+      margin: .3em 0;
+      color: var(--mut);
+      font: calc(var(--u)*1.35) var(--mono)
+    }
+
+    .compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      background: var(--line);
+      border-radius: 20px;
+      overflow: hidden
+    }
+
+    .compare>div {
+      background: #0c2031;
+      padding: calc(var(--u)*2.2)
+    }
+
+    .compare h3 {
+      font-size: calc(var(--u)*3.4);
+      margin: 0 0 .4em
+    }
+
+    .compare p {
+      font-size: calc(var(--u)*2);
+      line-height: 1.4;
+      color: var(--mut)
+    }
+
+    #hud {
+      position: fixed;
+      z-index: 8;
+      left: calc(var(--u)*3);
+      right: calc(var(--u)*3);
+      bottom: calc(var(--u)*2.2)
+    }
+
+    #progress {
+      height: 3px;
+      background: #214258;
+      border-radius: 9px;
+      overflow: hidden
+    }
+
+    #progress i {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--cyan);
+      transition: .4s
+    }
+
+    #overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      background: #06121ff5;
+      padding: 6vh 8vw;
+      overflow: auto
+    }
+
+    #overlay.show {
+      display: block
+    }
+
+    .mapitem {
+      display: flex;
+      gap: 1em;
+      padding: .65em;
+      border-bottom: 1px solid #24445a;
+      cursor: pointer
+    }
+
+    .mapitem:hover {
+      background: #123148
+    }
+
+    .mapitem b {
+      color: var(--cyan);
+      min-width: 2em
+    }
+
+    .mapitem span {
+      color: var(--mut)
+    }
+
+    .help {
+      position: fixed;
+      z-index: 25;
+      right: 3vw;
+      top: 3vh;
+      display: none;
+      background: #0b2537;
+      border: 1px solid var(--cyan);
+      border-radius: 15px;
+      padding: 1.2em;
+      color: var(--mut);
+      font-size: 14px
+    }
+
+    .help.show {
+      display: block
+    }
+
+    .help kbd {
+      color: #fff;
+      border: 1px solid #4d7e91;
+      padding: 1px 5px;
+      border-radius: 4px
+    }
+
+    .footer-note {
+      color: var(--mut);
+      font-size: calc(var(--u)*1.45);
+      max-width: 55ch
+    }
+
+    .refs a {
+      color: var(--cyan);
+      text-decoration: none
+    }
+
+    .refs li {
+      margin: .5em 0;
+      font-size: calc(var(--u)*1.65);
+      color: var(--mut)
+    }
+
+    .graph-clean svg {
+      width: 100%;
+      height: 100%
+    }
+
+    .graph-edge {
+      stroke: var(--cyan);
+      stroke-width: 5;
+      fill: none
+    }
+
+    .graph-node {
+      fill: #0c3247;
+      stroke: var(--cyan);
+      stroke-width: 3
+    }
+
+    .graph-name {
+      fill: var(--ink);
+      font: 700 28px var(--sans);
+      text-anchor: middle
+    }
+
+    .graph-label {
+      fill: var(--cyan);
+      font: 700 18px var(--mono);
+      text-anchor: middle
+    }
+
+    .compare-code pre,
+    .code-steps {
+      font: calc(var(--u)*1.28) var(--mono);
+      line-height: 1.55;
+      white-space: normal;
+      color: #cce8f1
+    }
+
+    .result-value {
+      font: 700 calc(var(--u)*3.2) var(--mono) !important;
+      color: var(--cyan) !important
+    }
+
+    .code-steps span,
+    .cql-code span {
+      display: block;
+      margin: .2em 0
+    }
+
+    .node-flow {
+      display: flex;
+      gap: .6em;
+      align-items: center;
+      justify-content: center;
+      color: var(--cyan);
+      font: 700 calc(var(--u)*1.55) var(--mono);
+      margin-bottom: 1.4em
+    }
+
+    .timing-result {
+      font-size: calc(var(--u)*1.25);
+      color: var(--mut);
+      text-align: center
+    }
+
+    .redis-top .terminal,
+    .redis-top .store {
+      height: calc(var(--u)*22)
+    }
+
+    .cache-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: calc(var(--u)*1);
+      margin-top: calc(var(--u)*.4)
+    }
+
+    .cache-card {
+      position: relative;
+      min-height: calc(var(--u)*11.5);
+      text-align: left;
+      padding: calc(var(--u)*1.15) calc(var(--u)*1.3);
+      background: linear-gradient(135deg, #0e2b40, #081826);
+      border-color: var(--line);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: .3em .6em;
+      align-content: start
+    }
+
+    .cache-card .tag {
+      grid-column: 1/-1;
+      font-size: calc(var(--u)*1.05)
+    }
+
+    .cache-card strong {
+      font: 700 calc(var(--u)*2.2) var(--mono);
+      color: var(--ink)
+    }
+
+    .cache-card i {
+      align-self: center;
+      height: 8px;
+      width: 100%;
+      background: #29506a;
+      border-radius: 99px;
+      overflow: hidden
+    }
+
+    .cache-card i:after {
+      content: "";
+      display: block;
+      height: 100%;
+      width: 100%;
+      background: var(--cyan);
+      transform-origin: left;
+      transform: scaleX(var(--time-scale, .85));
+      transition: transform .35s
+    }
+
+    .cache-card[data-timing="HIT"] {
+      --time-scale: .06
+    }
+
+    .cache-card[data-timing="EXPIRED"] {
+      --time-scale: 1
+    }
+
+    .cache-card p {
+      grid-column: 1/-1;
+      margin: .2em 0 0;
+      color: var(--mut);
+      font: calc(var(--u)*1.15) var(--sans);
+      line-height: 1.3
+    }
+
+    .cache-card.selected {
+      border-color: var(--cyan);
+      box-shadow: 0 0 24px #28d9df55;
+      background: #124158
+    }
+
+    .flow-grid {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr;
+      gap: calc(var(--u)*.65);
+      max-width: 100%;
+      margin: auto
+    }
+
+    .flow-grid .service {
+      width: auto;
+      min-width: 0
+    }
+
+    .flow-arrow {
+      align-self: center;
+      color: #416d84;
+      font: 700 calc(var(--u)*3.1) var(--mono);
+      transition: color .3s, transform .3s
+    }
+
+    .flow-arrow.active {
+      color: var(--cyan);
+      text-shadow: 0 0 20px var(--cyan);
+      animation: arrowPulse .8s ease-in-out infinite alternate
+    }
+
+    @keyframes arrowPulse {
+      to {
+        transform: translateX(4px)
+      }
+    }
+
+    .flow-path {
+      text-align: center;
+      min-height: 2.4em;
+      color: var(--cyan);
+      font: 700 calc(var(--u)*1.45) var(--mono);
+      margin: .3em
+    }
+
+    .cql-code mark {
+      background: #28d9df33;
+      color: var(--cyan);
+      padding: 0 .2em
+    }
+
+    .flow-shell {
+      position: relative;
+      padding-bottom: calc(var(--u)*3.5)
+    }
+
+    .flow-grid {
+      position: relative;
+      z-index: 1
+    }
+
+    .flow-gap {
+      align-self: center;
+      width: calc(var(--u)*3.1)
+    }
+
+    .api-db-connector {
+      position: absolute;
+      z-index: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      height: calc(var(--u)*5.2);
+      overflow: visible
+    }
+
+    .api-db-connector path[data-link] {
+      fill: none;
+      stroke: #416d84;
+      stroke-width: 5;
+      transition: stroke .3s, filter .3s
+    }
+
+    .api-db-connector path[data-link].active {
+      stroke: var(--cyan);
+      filter: drop-shadow(0 0 6px var(--cyan));
+      animation: linePulse .8s ease-in-out infinite alternate
+    }
+
+    @keyframes linePulse {
+      to {
+        stroke-width: 7
+      }
+    }
+
+    @media(max-aspect-ratio:1/1) {
+
+      html,
+      body {
+        overflow: auto
+      }
+
+      .scene {
+        position: relative;
+        min-height: 100vh;
+        padding: 90px 24px 100px
+      }
+
+      .title {
+        font-size: 45px
+      }
+
+      .grid,
+      .cols2,
+      .cols3,
+      .compare {
+        grid-template-columns: 1fr
+      }
+
+      .flow {
+        flex-wrap: wrap
+      }
+
+      .diagram {
+        min-height: 380px
+      }
+
+      .service {
+        width: 130px
+      }
+
+      .nav {
+        bottom: 16px
+      }
+
+      #hud {
+        bottom: 12px
+      }
+
+      .terminal,
+      .store {
+        height: 300px
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main id="stage">
+    <section class="scene center" data-owner="Todos" data-title="Abertura">
+      <div class="eyebrow">Seminário de Banco de Dados</div>
+      <h1 class="title">Outros modelos <span>NoSQL</span></h1>
+      <p class="lead">Grafos, chave–valor e colunas largas: três formas de organizar dados para problemas diferentes.
+      </p>
+      <div class="pills"><span class="pill">Murilo</span><span class="pill">Rafael</span><span
+          class="pill">Victor</span><span class="pill">Pedro</span></div>
+      <p class="small">Pressione espaço, → ou clique para começar</p>
+    </section>
+    <section class="scene" data-owner="Murilo" data-title="Por que NoSQL?">
+      <div class="kicker">01 · Contexto e motivação</div>
+      <h2 class="title">Quando os dados mudam, o modelo também.</h2>
+      <div class="grid cols3">
+        <article class="card reveal">
+          <div class="num">01</div>
+          <h3>Crescimento</h3>
+          <p>Aplicações web, redes sociais e telemetria produzem dados em grande volume.</p>
+        </article>
+        <article class="card reveal">
+          <div class="num">02</div>
+          <h3>Novos acessos</h3>
+          <p>Conexões, sessões temporárias e fluxos de eventos têm necessidades próprias.</p>
+        </article>
+        <article class="card reveal">
+          <div class="num">03</div>
+          <h3>Distribuição</h3>
+          <p>Algumas cargas pedem particionamento, replicação e escala horizontal.</p>
+        </article>
+      </div>
+      <p class="footer-note reveal"><b>NoSQL não substitui SQL:</b> amplia as alternativas de modelagem.</p>
+    </section>
+    <section class="scene" data-owner="Murilo" data-title="SQL, NoSQL e escala">
+      <div class="kicker">02 · Conceitos fundamentais</div>
+      <h2 class="title">Escolha pelo <span>acesso</span> aos dados.</h2>
+      <div class="grid cols2">
+        <article class="card reveal">
+          <div class="tag">RELACIONAL · PostgreSQL</div>
+          <h3>Tabelas e relações</h3>
+          <p>Chaves estrangeiras, JOINs, SQL e transações maduras. Excelente para integridade relacional e consultas
+            flexíveis.</p>
+        </article>
+        <article class="card reveal">
+          <div class="tag">NoSQL · uma família</div>
+          <h3>Modelos especializados</h3>
+          <p>Grafos, chave–valor, documentos e colunas largas. Modelo, linguagem e consistência variam conforme o
+            produto.</p>
+        </article>
+      </div>
+      <div class="grid cols2 reveal">
+        <article class="card">
+          <div class="tag">SCALE UP</div>
+          <h3>Vertical</h3>
+          <p>Mais CPU e RAM em um servidor.</p>
+        </article>
+        <article class="card">
+          <div class="tag">SCALE OUT</div>
+          <h3>Horizontal</h3>
+          <p>Mais servidores; dados e carga distribuídos.</p>
+        </article>
+      </div>
+    </section>
+    <section class="scene" data-owner="Murilo" data-title="Mapa dos modelos">
+      <div class="kicker">03 · Principais modelos</div>
+      <h2 class="title">Uma pergunta guia a escolha: <span>como vou acessar?</span></h2>
+      <div class="grid cols3">
+        <article class="card reveal">
+          <div class="tag">GRAFOS</div>
+          <h3>Neo4j</h3>
+          <p>Relacionamentos e percursos.</p>
+        </article>
+        <article class="card reveal">
+          <div class="tag">CHAVE–VALOR</div>
+          <h3>Redis · DynamoDB</h3>
+          <p>Acesso direto por chave.</p>
+        </article>
+        <article class="card reveal">
+          <div class="tag">COLUNAS LARGAS</div>
+          <h3>Cassandra</h3>
+          <p>Eventos distribuídos por partição.</p>
+        </article>
+      </div>
+      <p class="footer-note reveal">MongoDB representa o modelo de documentos — outro membro importante da família
+        NoSQL.</p>
+    </section>
+    <section class="scene" data-owner="Rafael" data-title="Grafos: elementos">
+      <div class="kicker">04 · Modelo orientado a grafos</div>
+      <h2 class="title">Dados conectados, <span>conexões explícitas.</span></h2>
+      <div class="grid cols2">
+        <div class="diagram graph-clean"><svg viewBox="0 0 800 300" aria-label="João segue Maria, que segue Pedro">
+            <defs>
+              <marker id="arrowhead" markerWidth="10" markerHeight="8" refX="8" refY="4" orient="auto">
+                <path d="M0,0 L9,4 L0,8Z" fill="#28d9df" />
+              </marker>
+            </defs>
+            <g class="reveal">
+              <circle class="graph-node" cx="145" cy="150" r="62" /><text class="graph-name" x="145" y="158">João</text>
+            </g>
+            <path class="graph-edge reveal" d="M210 150 L335 150" marker-end="url(#arrowhead)" /><text
+              class="graph-label reveal" x="245" y="115">SEGUE</text>
+            <g class="reveal">
+              <circle class="graph-node" cx="400" cy="150" r="62" /><text class="graph-name" x="400"
+                y="158">Maria</text>
+            </g>
+            <path class="graph-edge reveal" d="M465 150 L590 150" marker-end="url(#arrowhead)" /><text
+              class="graph-label reveal" x="500" y="115">SEGUE</text>
+            <g class="reveal">
+              <circle class="graph-node" cx="655" cy="150" r="62" /><text class="graph-name" x="655"
+                y="158">Pedro</text>
+            </g>
+          </svg></div>
+        <div class="card">
+          <div class="num">● → ●</div>
+          <h3>Nós, arestas e propriedades</h3>
+          <p><b>Nós</b> são entidades. <b>Arestas direcionadas</b> são relações. <b>Propriedades</b> guardam atributos.
+          </p>
+          <p class="small">Avance para criar os nós e as conexões João → Maria → Pedro.</p>
+        </div>
+      </div>
+    </section>
+    <section class="scene" data-owner="Rafael" data-title="MySQL versus Neo4j">
+      <div class="kicker">05 · Mesmo percurso, duas expressões</div>
+      <h2 class="title">Amigos de amigos: <span>João → Maria → Pedro.</span></h2>
+      <div class="grid cols2 compare-code">
+        <div class="card reveal">
+          <div class="tag">MYSQL · TABELAS + JOINs</div>
+          <pre>SELECT DISTINCT p3.nome<br>FROM pessoas p1<br>JOIN amizades a1 ON a1.origem_id=p1.id<br>JOIN pessoas p2 ON p2.id=a1.destino_id<br>JOIN amizades a2 ON a2.origem_id=p2.id<br>JOIN pessoas p3 ON p3.id=a2.destino_id<br>WHERE p1.nome = 'João';</pre>
+        </div>
+        <div class="card reveal">
+          <div class="tag">NEO4J · RELAÇÕES NO MODELO</div>
+          <pre>MATCH (:Pessoa {nome: 'João'})<br>      -[:SEGUE]-&gt;()<br>      -[:SEGUE]-&gt;(amigo)<br>RETURN DISTINCT amigo.nome;</pre>
+        </div>
+      </div>
+      <div class="grid cols2 reveal">
+        <article class="card">
+          <h3>Expressividade</h3>
+          <p>No MySQL, tabelas e JOINs percorrem as duas relações. No Neo4j, o padrão de conexões aparece diretamente na
+            consulta.</p>
+        </article>
+        <article class="card">
+          <h3>Mesmo resultado</h3>
+          <p class="result-value">Pedro</p>
+          <p>Grafos podem ser mais expressivos para relações; não são automaticamente mais rápidos.</p>
+        </article>
+      </div>
+    </section>
+    <section class="scene" data-owner="Victor" data-title="Chave-valor">
+      <div class="kicker">06 · Modelo chave–valor</div>
+      <h2 class="title">Uma chave aponta para <span>um valor.</span></h2>
+      <div class="grid cols3">
+        <article class="card reveal">
+          <div class="tag">sessao:123</div>
+          <h3>usuario=42</h3>
+          <p>Sessões temporárias.</p>
+        </article>
+        <article class="card reveal">
+          <div class="tag">produto:101</div>
+          <h3>Notebook</h3>
+          <p>Dados consultados diretamente.</p>
+        </article>
+        <article class="card reveal">
+          <div class="tag">visitas:home</div>
+          <h3>1542</h3>
+          <p>Contadores e rankings.</p>
+        </article>
+      </div>
+      <p class="lead reveal">A aplicação usa a chave para localizar diretamente o valor. Consultas complexas não são o
+        foco desse modelo.</p>
+    </section>
+    <section class="scene" data-owner="Victor" data-title="Redis na prática">
+      <div class="kicker">07 · Node.js + TypeScript</div>
+      <h2 class="title">Do código à <span>chave no Redis.</span></h2>
+      <div class="grid cols2">
+        <div class="query code-steps"><span class="reveal"><b>import</b> { createClient } from 'redis';</span><span
+            class="reveal"><b>const</b> redis = createClient();</span><span class="reveal"><b>await</b>
+            redis.connect();</span><span class="reveal"><b>await</b> redis.set('produto:101', 'Notebook', { EX: 30
+            });</span><span class="reveal"><b>const</b> produto = await redis.get('produto:101');</span><span
+            class="reveal">console.log(produto); <i>// Notebook</i></span></div>
+        <div class="card">
+          <div class="node-flow"><b>Aplicação Node.js</b><span>→</span><b>Redis</b><span>→</span><b>produto:101</b>
+          </div>
+          <p class="reveal"><b>createClient</b> cria o cliente; <b>connect</b> estabelece a conexão.</p>
+          <p class="reveal"><b>set</b> armazena; <b>EX: 30</b> define o TTL em segundos.</p>
+          <p class="reveal"><b>get</b> recupera o valor pela chave.</p>
+        </div>
+      </div>
+    </section>
+    <section class="scene" data-owner="Victor" data-title="Simulador Redis">
+      <div class="kicker">08 · Redis · simulador didático</div>
+      <h2 class="title">Comandos, TTL e <span>cache em ação.</span></h2>
+      <div class="grid cols2 redis-top">
+        <div class="terminal">
+          <div class="bar">redis-cli · simulação local (não é um Redis real)</div>
+          <div id="redisOut" class="screen"><span class="small">Experimente: SET produto:101 Notebook · GET produto:101
+              · INCR visitas · EXPIRE produto:101 30 · DEL produto:101</span></div>
+          <form class="cmdline" id="redisForm"><span class="prompt">127.0.0.1:6379&gt;</span><input id="redisInput"
+              autocomplete="off" placeholder="SET produto:101 Notebook"><button>executar</button></form>
+        </div>
+        <div class="card store">
+          <div class="tag">Memória chave–valor</div>
+          <div id="redisStore">
+            <p class="small">Nenhuma chave armazenada.</p>
+          </div>
+        </div>
+      </div>
+      <div class="cache-cards" id="cacheCards"><button class="cache-card" data-timing="MISS"
+          onclick="runTiming('MISS')"><span class="tag">CACHE MISS</span><strong>2.000 ms</strong><i></i>
+          <p>Consulta o banco principal e armazena o resultado no Redis com TTL de 30 s.</p>
+        </button><button class="cache-card" data-timing="HIT" onclick="runTiming('HIT')"><span class="tag">CACHE
+            HIT</span><strong>15 ms</strong><i></i>
+          <p>Resposta direta do Redis. O banco principal não é consultado.</p>
+        </button><button class="cache-card" data-timing="EXPIRED" onclick="runTiming('EXPIRED')"><span class="tag">TTL
+            EXPIRADO</span><strong>2.000 ms</strong><i></i>
+          <p>A chave expirou; uma nova consulta ao banco principal preenche o cache.</p>
+        </button></div>
+      <div id="timingResult" class="timing-result">Selecione um cenário. Tempos simulados para fins didáticos; não são
+        benchmarks reais.</div>
+    </section>
+    <section class="scene" data-owner="Victor" data-title="Redis: estruturas e usos">
+      <div class="kicker">08 · Redis em sistemas reais</div>
+      <h2 class="title">Mais que <span>strings.</span></h2>
+      <div class="grid cols3">
+        <article class="card reveal">
+          <h3>Estruturas</h3>
+          <p>Hashes, listas, sets, sorted sets e streams.</p>
+        </article>
+        <article class="card reveal">
+          <h3>Persistência</h3>
+          <p>RDB e AOF são opções de persistência com características diferentes.</p>
+        </article>
+        <article class="card reveal">
+          <h3>Cuidados</h3>
+          <p>Invalidação, uso de RAM, durabilidade configurada e limites para consultas complexas.</p>
+        </article>
+      </div>
+      <div class="grid cols3 reveal">
+        <article class="card">
+          <h3>Cache</h3>
+          <p>Produtos e respostas repetidas.</p>
+        </article>
+        <article class="card">
+          <h3>Sessões</h3>
+          <p>Estado temporário de usuários.</p>
+        </article>
+        <article class="card">
+          <h3>Contadores</h3>
+          <p>Rate limiting e rankings.</p>
+        </article>
+      </div>
+    </section>
+    <section class="scene" data-owner="Victor" data-title="Cache-aside">
+      <div class="kicker">10 · Cache-aside · simulação</div>
+      <h2 class="title">A API <span>orquestra</span> o cache.</h2>
+      <div class="flow-shell">
+        <div class="flow flow-grid">
+          <div class="service" data-svc="client">Cliente<i>requisição / resposta</i></div><b class="flow-arrow"
+            data-link="client-api">⇄</b>
+          <div class="service" data-svc="api">API<i>decide o fluxo</i></div><b class="flow-arrow"
+            data-link="api-redis">⇄</b>
+          <div class="service" data-svc="redis">Redis<i>cache</i></div><span class="flow-gap"></span>
+          <div class="service" data-svc="postgres">PostgreSQL<i>fonte dos dados</i></div>
+        </div><svg class="api-db-connector" viewBox="0 0 1000 95" preserveAspectRatio="none"
+          aria-label="Conexão direta entre API e PostgreSQL">
+          <defs>
+            <marker id="apiDbArrow" markerWidth="9" markerHeight="7" refX="7" refY="3.5" orient="auto">
+              <path d="M0,0 L8,3.5 L0,7Z" />
+            </marker>
+          </defs>
+          <path data-link="api-postgres" d="M385 1 V66 H870 V1" marker-start="url(#apiDbArrow)"
+            marker-end="url(#apiDbArrow)" />
+        </svg>
+      </div>
+      <div id="flowPath" class="flow-path">Escolha um cenário para revelar requisições e respostas.</div>
+      <div class="controls"><button onclick="runCache('BYPASS')">1 · BYPASS</button><button onclick="runCache('MISS')">2
+          · MISS</button><button onclick="runCache('HIT')">3 · HIT</button><button onclick="invalidateCache()">PATCH ·
+          invalidar</button></div>
+      <p class="result" id="cacheResult">O modo padrão é uma simulação didática.</p>
+      <p class="small">As setas representam conexões conceituais. A API — e não o Redis — consulta PostgreSQL e gerencia
+        o cache.</p>
+    </section>
+    <section class="scene" data-owner="Pedro" data-title="Wide-column">
+      <div class="kicker">11 · Colunas largas</div>
+      <h2 class="title">Cassandra organiza dados em <span>partições.</span></h2>
+      <div class="grid cols3" id="parts">
+        <article class="partition reveal">
+          <h4>PARTIÇÃO A · usuário 42</h4>
+          <div class="rowdata">10:30 · Login</div>
+          <div class="rowdata">10:20 · Compra</div>
+          <div class="rowdata">10:10 · Busca</div>
+        </article>
+        <article class="partition reveal">
+          <h4>PARTIÇÃO B · usuário 63</h4>
+          <div class="rowdata">11:00 · Login</div>
+          <div class="rowdata">10:45 · Busca</div>
+        </article>
+        <article class="partition reveal">
+          <h4>PARTIÇÃO C · usuário 81</h4>
+          <div class="rowdata">09:15 · Compra</div>
+          <div class="rowdata">09:00 · Login</div>
+        </article>
+      </div>
+      <div class="grid cols2 reveal">
+        <article class="card">
+          <h3>Partition key</h3>
+          <p>Determina onde os dados ficam distribuídos.</p>
+        </article>
+        <article class="card">
+          <h3>Clustering column</h3>
+          <p>Ordena registros dentro da partição.</p>
+        </article>
+      </div>
+      <p class="footer-note reveal">“Colunas largas” não significa armazenamento analítico colunar: Cassandra favorece
+        acessos planejados sobre partições.</p>
+    </section>
+    <section class="scene" data-owner="Pedro" data-title="CQL e modelagem">
+      <div class="kicker">12 · Cassandra · da tabela à consulta</div>
+      <h2 class="title">Partição primeiro, <span>ordem depois.</span></h2>
+      <div class="grid cols2">
+        <div class="query cql-code"><span class="reveal"><b>CREATE TABLE</b> eventos_usuario (</span><span
+            class="reveal"> usuario_id UUID,</span><span class="reveal"> data_evento TIMESTAMP,</span><span
+            class="reveal"> tipo_evento TEXT,</span><span class="reveal"> PRIMARY KEY (<mark>usuario_id</mark>,
+            <mark>data_evento</mark>)</span><span class="reveal">) WITH CLUSTERING ORDER BY (data_evento
+            DESC);</span><span class="reveal"><br><b>SELECT *</b> FROM eventos_usuario<br>WHERE usuario_id = ?;</span>
+        </div>
+        <div class="card">
+          <p class="reveal"><b>1. Tabela:</b> CQL tem sintaxe semelhante a SQL.</p>
+          <p class="reveal"><b>2. Partition key:</b> <span class="mono">usuario_id</span> leva eventos do mesmo usuário
+            à mesma partição lógica.</p>
+          <p class="reveal"><b>3. Clustering:</b> <span class="mono">data_evento</span> ordena os eventos dentro dessa
+            partição, em ordem decrescente.</p>
+          <p class="reveal"><b>4. Consulta:</b> a chave informa qual partição acessar.</p>
+          <p class="reveal"><b>Relacional:</b> tabelas, índices e SQL flexível. <b>Cassandra:</b> modelagem pelos
+            padrões de consulta.</p>
+        </div>
+      </div>
+      <p class="footer-note">CQL não oferece todas as possibilidades de consulta de um banco relacional; o acesso é
+        planejado a partir da chave de partição.</p>
+    </section>
+    <section class="scene" data-owner="Pedro" data-title="Cassandra versus BigQuery">
+      <div class="kicker">12 · Comparação essencial</div>
+      <h2 class="title">Mesmo “colunar”, <span>propósito diferente.</span></h2>
+      <div class="compare">
+        <div>
+          <div class="tag">CASSANDRA · WIDE-COLUMN</div>
+          <h3>Operacional e distribuído</h3>
+          <p>Dados por partições, consultas planejadas e CQL. Indicado para cargas operacionais com escala distribuída.
+          </p>
+          <p class="mono small">SELECT … WHERE usuario_id = ?</p>
+        </div>
+        <div>
+          <div class="tag">BIGQUERY · ANALÍTICO COLUNAR</div>
+          <h3>Análise e agregação</h3>
+          <p>Consultas analíticas em grandes volumes usando SQL. Não é usualmente classificado como NoSQL.</p>
+          <p class="mono small">SELECT SUM(valor) FROM vendas</p>
+        </div>
+      </div>
+      <p class="footer-note">Cassandra não é um data warehouse; BigQuery não substitui um banco operacional de baixa
+        latência.</p>
+    </section>
+    <section class="scene" data-owner="Pedro" data-title="Quando escolher?">
+      <div class="kicker">13 · Decisões de engenharia</div>
+      <h2 class="title">O modelo acompanha o <span>problema.</span></h2>
+      <div class="grid cols3">
+        <article class="card reveal">
+          <h3>Neo4j</h3>
+          <p>Relacionamentos e percursos.</p>
+        </article>
+        <article class="card reveal">
+          <h3>Redis</h3>
+          <p>Cache, sessões e contadores.</p>
+        </article>
+        <article class="card reveal">
+          <h3>DynamoDB</h3>
+          <p>Chave–valor gerenciado; partition key e sort key opcional.</p>
+        </article>
+        <article class="card reveal">
+          <h3>Cassandra</h3>
+          <p>Eventos distribuídos por partição.</p>
+        </article>
+        <article class="card reveal">
+          <h3>BigQuery</h3>
+          <p>Análise de grandes volumes.</p>
+        </article>
+        <article class="card reveal">
+          <h3>PostgreSQL</h3>
+          <p>Integridade relacional e flexibilidade em SQL.</p>
+        </article>
+      </div>
+    </section>
+    <section class="scene" data-owner="Victor" data-title="Demonstração e conclusão">
+      <div class="kicker">14 · Prática e conclusão</div>
+      <h2 class="title">Cache economiza trabalho repetido. <span>Mas exige cuidado.</span></h2>
+      <div class="grid cols2">
+        <article class="card reveal">
+          <div class="tag">DEMONSTRAÇÃO REAL</div>
+          <h3>Node.js + TypeScript + Express</h3>
+          <p>Rota: <span class="mono">GET /products?category=electronics&page=1&cache=true</span>.</p>
+          <p>Se o backend local estiver disponível, a integração pode ser ativada no código. Sem ele, este site
+            permanece no modo simulação — claramente identificado.</p>
+        </article>
+        <article class="card reveal">
+          <div class="tag">CONCLUSÃO</div>
+          <h3>Cache não é fonte de verdade</h3>
+          <p>TTL limita dados obsoletos; invalidação após atualização evita servir listas antigas.</p>
+          <p>Grafos para conexões · chave–valor para acesso direto · colunas largas para partições distribuídas.</p>
+        </article>
+      </div>
+    </section>
+    <section class="scene" data-owner="Todos" data-title="Referências">
+      <div class="kicker">15 · Referências bibliográficas</div>
+      <h2 class="title">Para continuar <span>explorando.</span></h2>
+      <ul class="refs">
+        <li><a href="https://www.alura.com.br/artigos/sql-nosql-bancos-relacionais-nao-relacionais"
+            target="_blank">Alura — SQL e NoSQL: bancos relacionais e não relacionais</a></li>
+        <li><a
+            href="https://www.alura.com.br/artigos/trabalhando-com-relacionamentos-bancos-de-dados-baseados-em-grafos-e-o-neo4j"
+            target="_blank">Alura — Grafos e Neo4j</a></li>
+        <li><a href="https://aws.amazon.com/pt/elasticache/what-is-redis/" target="_blank">AWS — O que é Redis?</a></li>
+        <li><a
+            href="https://redis.io/blog/why-your-caching-strategies-might-be-holding-you-back-and-what-to-consider-next/"
+            target="_blank">Redis — Estratégias de cache</a></li>
+        <li><a href="https://aws.amazon.com/pt/blogs/aws-brasil/choosing-the-right-dynamodb-partition-key/"
+            target="_blank">AWS Brasil — Escolhendo uma partition key no DynamoDB</a></li>
+        <li><a
+            href="https://cloud.google.com/blog/topics/developers-practitioners/bigquery-admin-reference-guide-storage"
+            target="_blank">Google Cloud — BigQuery storage</a></li>
+        <li><a href="https://martinfowler.com/bliki/PolyglotPersistence.html" target="_blank">Martin Fowler — Polyglot
+            Persistence</a></li>
+      </ul>
+    </section>
+  </main>
+  <div id="hud">
+    <div id="progress"><i></i></div>
+  </div>
+  <div id="overlay">
+    <div class="kicker">Mapa de cenas · pressione O para fechar</div>
+    <h2 class="title">Navegação rápida</h2>
+    <div id="map"></div>
+  </div>
+  <div class="help" id="help"><b>Atalhos</b><br><kbd>←</kbd> <kbd>→</kbd> / <kbd>espaço</kbd> navegar<br><kbd>O</kbd>
+    mapa · <kbd>T</kbd> cronômetro<br><kbd>F</kbd> tela cheia · <kbd>?</kbd> ajuda<br><kbd>Home</kbd> início ·
+    <kbd>End</kbd> fim</div>
+  <script>
+    const scenes = [...document.querySelectorAll('.scene')], stage = document.querySelector('#stage'); let current = 0, step = 0;
+    const state = JSON.parse(localStorage.getItem('nosql-present-state') || '{}'); current = Math.min(state.scene || 0, scenes.length - 1); step = state.step || 0;
+    function draw() { scenes.forEach((s, i) => s.classList.toggle('active', i === current)); let frags = [...scenes[current].querySelectorAll('.reveal')]; frags.forEach((f, i) => f.classList.toggle('show', i < step)); document.querySelector('#progress i').style.width = ((current + 1) / scenes.length * 100) + '%'; location.hash = (current + 1) + '.' + step; localStorage.setItem('nosql-present-state', JSON.stringify({ scene: current, step })); special(); }
+    function special() { if (scenes[current].dataset.title === 'Wide-column') { document.querySelectorAll('.partition').forEach((p, i) => p.classList.toggle('active', step > i)) } }
+    function next() { let max = scenes[current].querySelectorAll('.reveal').length; if (step < max) { step++ } else if (current < scenes.length - 1) { current++; step = 0 } draw() }; function prev() { if (step > 0) { step-- } else if (current > 0) { current--; step = scenes[current].querySelectorAll('.reveal').length } draw() };
+    document.addEventListener('keydown', e => { if (e.target.tagName === 'INPUT') return; if (['ArrowRight', ' '].includes(e.key)) { e.preventDefault(); next() } if (e.key === 'ArrowLeft') prev(); if (e.key === 'Home') { current = step = 0; draw() } if (e.key === 'End') { current = scenes.length - 1; step = 0; draw() } if (e.key.toLowerCase() === 'o') document.querySelector('#overlay').classList.toggle('show'); if (e.key.toLowerCase() === 'f') { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen() } if (e.key === '?') document.querySelector('#help').classList.toggle('show') });
+    document.querySelector('#stage').addEventListener('click', e => { if (!e.target.closest('button,input,a,form')) next() });
+    const map = document.querySelector('#map'); scenes.forEach((s, i) => { let d = document.createElement('div'); d.className = 'mapitem'; d.innerHTML = '<b>' + String(i + 1).padStart(2, '0') + '</b><div>' + s.dataset.title + ' <span>· ' + s.dataset.owner + '</span></div>'; d.onclick = () => { current = i; step = 0; document.querySelector('#overlay').classList.remove('show'); draw() }; map.append(d) });
+    let kv = {}, log = []; function esc(s) { return String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])) } function expireRedisKeys() { let now = Date.now(); Object.entries(kv).forEach(([k, v]) => { if (v.exp && v.exp <= now) delete kv[k] }) } function renderRedis() { expireRedisKeys(); document.querySelector('#redisOut').innerHTML = log.map(x => '<div>' + x + '</div>').join(''); let vals = Object.entries(kv); document.querySelector('#redisStore').innerHTML = vals.length ? vals.map(([k, v]) => '<div class="entry"><b>' + esc(k) + '</b><span class="ttl">' + (v.exp ? Math.max(0, Math.ceil((v.exp - Date.now()) / 1000)) + 's' : 'sem TTL') + '</span><br>' + esc(v.v) + '</div>').join('') : '<p class="small">Nenhuma chave armazenada.</p>' }
+    document.querySelector('#redisForm').onsubmit = e => { e.preventDefault(); let raw = document.querySelector('#redisInput').value.trim(), p = raw.split(/\s+/), op = (p.shift() || '').toUpperCase(), out = '(erro) comando não suportado'; let key = p.shift(); expireRedisKeys(); if (op === 'SET' && key) { kv[key] = { v: p.join(' ') }; out = 'OK' } if (op === 'GET' && key) out = kv[key] ? '"' + kv[key].v + '"' : '(nil)'; if (op === 'DEL' && key) { out = kv[key] ? '(integer) 1' : '(integer) 0'; delete kv[key] } if (op === 'INCR' && key) { kv[key] = { v: String(Number(kv[key]?.v || 0) + 1) }; out = '(integer) ' + kv[key].v } if (op === 'EXPIRE' && key && kv[key]) { kv[key].exp = Date.now() + Number(p[0] || 0) * 1000; out = '(integer) 1' } log.push('<span class="prompt">127.0.0.1:6379&gt;</span> ' + esc(raw) + '<br>' + esc(out)); document.querySelector('#redisInput').value = ''; renderRedis() }; setInterval(renderRedis, 1000);
+    let cacheExpiresAt = 0; function cacheIsValid() { return cacheExpiresAt > Date.now() } function active(names, links = []) { document.querySelectorAll('.service').forEach(x => x.classList.toggle('active', names.includes(x.dataset.svc))); document.querySelectorAll('.flow-arrow,.api-db-connector [data-link]').forEach(x => x.classList.toggle('active', links.includes(x.dataset.link))) } function cacheText(result, path) { document.querySelector('#cacheResult').innerHTML = result; document.querySelector('#flowPath').textContent = path } function runCache(type) { if (type === 'BYPASS') { active(['client', 'api', 'postgres'], ['client-api', 'api-postgres']); cacheText('<b class="accent">BYPASS</b> · cache=false: PostgreSQL foi consultado.', 'Cliente → API → PostgreSQL → API → Cliente') } if (type === 'MISS') { cacheExpiresAt = Date.now() + 30000; active(['client', 'api', 'redis', 'postgres'], ['client-api', 'api-redis', 'api-postgres']); cacheText('<b class="accent">MISS</b> · Redis não encontrou a chave; PostgreSQL respondeu e a API preencheu o cache com TTL de 30 s.', 'Cliente → API → Redis ↩ sem chave · API → PostgreSQL → API → Redis (SET + TTL) · API → Cliente') } if (type === 'HIT') { if (!cacheExpiresAt) { cacheText('<b class="accent">HIT indisponível</b> · execute MISS primeiro para preencher o cache.', 'Cache vazio: execute MISS antes de solicitar HIT.'); return } if (!cacheIsValid()) { cacheExpiresAt = 0; cacheText('<b class="accent">Chave expirada</b> · o TTL terminou; execute MISS novamente para preencher o cache.', 'Cache expirado: a próxima leitura precisa de MISS.'); return } active(['client', 'api', 'redis'], ['client-api', 'api-redis']); cacheText('<b class="accent">HIT</b> · Redis respondeu; PostgreSQL não foi consultado.', 'Cliente → API → Redis → API → Cliente') } } function invalidateCache() { cacheExpiresAt = 0; active(['client', 'api', 'redis', 'postgres'], ['client-api', 'api-redis', 'api-postgres']); cacheText('<b class="accent">PATCH</b> · PostgreSQL atualizado; a API invalidou chaves relacionadas. Próximo GET será MISS.', 'Cliente → API → PostgreSQL → API → Redis (DEL) → API → Cliente') } function timingLog(command, response) { log.push('<span class="prompt">127.0.0.1:6379&gt;</span> ' + command + '<br>' + response) } function runTiming(type) { document.querySelectorAll('.cache-card').forEach(c => c.classList.toggle('selected', c.dataset.timing === type)); let r = document.querySelector('#timingResult'); if (type === 'MISS') { kv['produto:101'] = { v: 'Notebook', exp: Date.now() + 30000 }; timingLog('GET produto:101', '(nil)'); timingLog('SET produto:101 Notebook EX 30', 'OK'); r.textContent = 'MISS · 2.000 ms simulados: consulta ao banco principal; produto armazenado no Redis por 30 s.' } if (type === 'HIT') { expireRedisKeys(); if (!kv['produto:101']) { r.textContent = 'HIT indisponível: execute MISS para preencher o cache do simulador.'; renderRedis(); return } timingLog('GET produto:101', '"Notebook"'); r.textContent = 'HIT · 15 ms simulados: resposta direta do Redis; banco principal não é consultado.' } if (type === 'EXPIRED') { delete kv['produto:101']; timingLog('GET produto:101', '(nil)  # chave expirada'); kv['produto:101'] = { v: 'Notebook', exp: Date.now() + 30000 }; timingLog('SET produto:101 Notebook EX 30', 'OK'); r.textContent = 'TTL expirado · 2.000 ms simulados: a chave foi removida e a nova consulta preencheu o cache.' } renderRedis() }
+    draw(); renderRedis();
+  </script>
+</body>
+
+</html>
