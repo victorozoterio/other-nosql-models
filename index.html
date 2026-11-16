@@ -1106,39 +1106,8 @@
         </div>
       </div>
     </section>
-    <section class="scene" data-owner="Victor" data-title="Simulador Redis">
-      <div class="kicker">08 · Redis · simulador didático</div>
-      <h2 class="title">Comandos, TTL e <span>cache em ação.</span></h2>
-      <div class="grid cols2 redis-top">
-        <div class="terminal">
-          <div class="bar">redis-cli · simulação local (não é um Redis real)</div>
-          <div id="redisOut" class="screen"><span class="small">Experimente: SET produto:101 Notebook · GET produto:101
-              · INCR visitas · EXPIRE produto:101 30 · DEL produto:101</span></div>
-          <form class="cmdline" id="redisForm"><span class="prompt">127.0.0.1:6379&gt;</span><input id="redisInput"
-              autocomplete="off" placeholder="SET produto:101 Notebook"><button>executar</button></form>
-        </div>
-        <div class="card store">
-          <div class="tag">Memória chave–valor</div>
-          <div id="redisStore">
-            <p class="small">Nenhuma chave armazenada.</p>
-          </div>
-        </div>
-      </div>
-      <div class="cache-cards" id="cacheCards"><button class="cache-card" data-timing="MISS"
-          onclick="runTiming('MISS')"><span class="tag">CACHE MISS</span><strong>2.000 ms</strong><i></i>
-          <p>Consulta o banco principal e armazena o resultado no Redis com TTL de 30 s.</p>
-        </button><button class="cache-card" data-timing="HIT" onclick="runTiming('HIT')"><span class="tag">CACHE
-            HIT</span><strong>15 ms</strong><i></i>
-          <p>Resposta direta do Redis. O banco principal não é consultado.</p>
-        </button><button class="cache-card" data-timing="EXPIRED" onclick="runTiming('EXPIRED')"><span class="tag">TTL
-            EXPIRADO</span><strong>2.000 ms</strong><i></i>
-          <p>A chave expirou; uma nova consulta ao banco principal preenche o cache.</p>
-        </button></div>
-      <div id="timingResult" class="timing-result">Selecione um cenário. Tempos simulados para fins didáticos; não são
-        benchmarks reais.</div>
-    </section>
     <section class="scene" data-owner="Victor" data-title="Cache-aside">
-      <div class="kicker">09 · Cache-aside · simulação</div>
+      <div class="kicker">08 · Cache-aside · simulação</div>
       <h2 class="title">A API <span>orquestra</span> o cache.</h2>
       <div class="flow-shell">
         <div class="flow flow-grid">
@@ -1168,7 +1137,7 @@
         o cache.</p>
     </section>
     <section class="scene" data-owner="Pedro" data-title="Wide-column">
-      <div class="kicker">10 · Colunas largas</div>
+      <div class="kicker">09 · Colunas largas</div>
       <h2 class="title">Cassandra organiza dados em <span>partições.</span></h2>
       <div class="grid cols3" id="parts">
         <article class="partition reveal">
@@ -1202,7 +1171,7 @@
         acessos planejados sobre partições.</p>
     </section>
     <section class="scene" data-owner="Pedro" data-title="CQL e modelagem">
-      <div class="kicker">11 · Cassandra · da tabela à consulta</div>
+      <div class="kicker">10 · Cassandra · da tabela à consulta</div>
       <h2 class="title">Partição primeiro, <span>ordem depois.</span></h2>
       <div class="grid cols2">
         <div class="query cql-code"><span class="reveal"><b>CREATE TABLE</b> eventos_usuario (</span><span
@@ -1226,7 +1195,7 @@
         planejado a partir da chave de partição.</p>
     </section>
     <section class="scene" data-owner="Pedro" data-title="Cassandra versus BigQuery">
-      <div class="kicker">12 · Comparação essencial</div>
+      <div class="kicker">11 · Comparação essencial</div>
       <h2 class="title">Mesmo “colunar”, <span>propósito diferente.</span></h2>
       <div class="compare">
         <div>
@@ -1247,7 +1216,7 @@
         latência.</p>
     </section>
     <section class="scene" data-owner="Pedro" data-title="Quando escolher?">
-      <div class="kicker">13 · Decisões de engenharia</div>
+      <div class="kicker">12 · Decisões de engenharia</div>
       <h2 class="title">O modelo acompanha o <span>problema.</span></h2>
       <div class="grid cols3">
         <article class="card reveal">
@@ -1277,7 +1246,7 @@
       </div>
     </section>
     <section class="scene" data-owner="Victor" data-title="Demonstração e conclusão">
-      <div class="kicker">14 · Prática e conclusão</div>
+      <div class="kicker">13 · Prática e conclusão</div>
       <h2 class="title">Cache economiza trabalho repetido. <span>Mas exige cuidado.</span></h2>
       <div class="grid cols2">
         <article class="card reveal">
@@ -1296,7 +1265,7 @@
       </div>
     </section>
     <section class="scene" data-owner="Todos" data-title="Referências">
-      <div class="kicker">15 · Referências bibliográficas</div>
+      <div class="kicker">14 · Referências bibliográficas</div>
       <h2 class="title">Para continuar <span>explorando.</span></h2>
       <ul class="refs">
         <li><a href="https://www.alura.com.br/artigos/sql-nosql-bancos-relacionais-nao-relacionais"
@@ -1339,9 +1308,9 @@
     document.querySelector('#stage').addEventListener('click', e => { if (!e.target.closest('button,input,a,form')) next() });
     const map = document.querySelector('#map'); scenes.forEach((s, i) => { let d = document.createElement('div'); d.className = 'mapitem'; d.innerHTML = '<b>' + String(i + 1).padStart(2, '0') + '</b><div>' + s.dataset.title + ' <span>· ' + s.dataset.owner + '</span></div>'; d.onclick = () => { current = i; step = 0; document.querySelector('#overlay').classList.remove('show'); draw() }; map.append(d) });
     let kv = {}, log = []; function esc(s) { return String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])) } function expireRedisKeys() { let now = Date.now(); Object.entries(kv).forEach(([k, v]) => { if (v.exp && v.exp <= now) delete kv[k] }) } function renderRedis() { expireRedisKeys(); document.querySelector('#redisOut').innerHTML = log.map(x => '<div>' + x + '</div>').join(''); let vals = Object.entries(kv); document.querySelector('#redisStore').innerHTML = vals.length ? vals.map(([k, v]) => '<div class="entry"><b>' + esc(k) + '</b><span class="ttl">' + (v.exp ? Math.max(0, Math.ceil((v.exp - Date.now()) / 1000)) + 's' : 'sem TTL') + '</span><br>' + esc(v.v) + '</div>').join('') : '<p class="small">Nenhuma chave armazenada.</p>' }
-    document.querySelector('#redisForm').onsubmit = e => { e.preventDefault(); let raw = document.querySelector('#redisInput').value.trim(), p = raw.split(/\s+/), op = (p.shift() || '').toUpperCase(), out = '(erro) comando não suportado'; let key = p.shift(); expireRedisKeys(); if (op === 'SET' && key) { kv[key] = { v: p.join(' ') }; out = 'OK' } if (op === 'GET' && key) out = kv[key] ? '"' + kv[key].v + '"' : '(nil)'; if (op === 'DEL' && key) { out = kv[key] ? '(integer) 1' : '(integer) 0'; delete kv[key] } if (op === 'INCR' && key) { kv[key] = { v: String(Number(kv[key]?.v || 0) + 1) }; out = '(integer) ' + kv[key].v } if (op === 'EXPIRE' && key && kv[key]) { kv[key].exp = Date.now() + Number(p[0] || 0) * 1000; out = '(integer) 1' } log.push('<span class="prompt">127.0.0.1:6379&gt;</span> ' + esc(raw) + '<br>' + esc(out)); document.querySelector('#redisInput').value = ''; renderRedis() }; setInterval(renderRedis, 1000);
+    if (document.querySelector('#redisForm')) { document.querySelector('#redisForm').onsubmit = e => { e.preventDefault(); let raw = document.querySelector('#redisInput').value.trim(), p = raw.split(/\s+/), op = (p.shift() || '').toUpperCase(), out = '(erro) comando não suportado'; let key = p.shift(); expireRedisKeys(); if (op === 'SET' && key) { kv[key] = { v: p.join(' ') }; out = 'OK' } if (op === 'GET' && key) out = kv[key] ? '"' + kv[key].v + '"' : '(nil)'; if (op === 'DEL' && key) { out = kv[key] ? '(integer) 1' : '(integer) 0'; delete kv[key] } if (op === 'INCR' && key) { kv[key] = { v: String(Number(kv[key]?.v || 0) + 1) }; out = '(integer) ' + kv[key].v } if (op === 'EXPIRE' && key && kv[key]) { kv[key].exp = Date.now() + Number(p[0] || 0) * 1000; out = '(integer) 1' } log.push('<span class="prompt">127.0.0.1:6379&gt;</span> ' + esc(raw) + '<br>' + esc(out)); document.querySelector('#redisInput').value = ''; renderRedis() }; setInterval(renderRedis, 1000); }
     let cacheExpiresAt = 0; function cacheIsValid() { return cacheExpiresAt > Date.now() } function active(names, links = []) { document.querySelectorAll('.service').forEach(x => x.classList.toggle('active', names.includes(x.dataset.svc))); document.querySelectorAll('.flow-arrow,.api-db-connector [data-link]').forEach(x => x.classList.toggle('active', links.includes(x.dataset.link))) } function cacheText(result, path) { document.querySelector('#cacheResult').innerHTML = result; document.querySelector('#flowPath').textContent = path } function runCache(type) { if (type === 'BYPASS') { active(['client', 'api', 'postgres'], ['client-api', 'api-postgres']); cacheText('<b class="accent">BYPASS</b> · cache=false: PostgreSQL foi consultado.', 'Cliente → API → PostgreSQL → API → Cliente') } if (type === 'MISS') { cacheExpiresAt = Date.now() + 30000; active(['client', 'api', 'redis', 'postgres'], ['client-api', 'api-redis', 'api-postgres']); cacheText('<b class="accent">MISS</b> · Redis não encontrou a chave; PostgreSQL respondeu e a API preencheu o cache com TTL de 30 s.', 'Cliente → API → Redis ↩ sem chave · API → PostgreSQL → API → Redis (SET + TTL) · API → Cliente') } if (type === 'HIT') { if (!cacheExpiresAt) { cacheText('<b class="accent">HIT indisponível</b> · execute MISS primeiro para preencher o cache.', 'Cache vazio: execute MISS antes de solicitar HIT.'); return } if (!cacheIsValid()) { cacheExpiresAt = 0; cacheText('<b class="accent">Chave expirada</b> · o TTL terminou; execute MISS novamente para preencher o cache.', 'Cache expirado: a próxima leitura precisa de MISS.'); return } active(['client', 'api', 'redis'], ['client-api', 'api-redis']); cacheText('<b class="accent">HIT</b> · Redis respondeu; PostgreSQL não foi consultado.', 'Cliente → API → Redis → API → Cliente') } } function invalidateCache() { cacheExpiresAt = 0; active(['client', 'api', 'redis', 'postgres'], ['client-api', 'api-redis', 'api-postgres']); cacheText('<b class="accent">PATCH</b> · PostgreSQL atualizado; a API invalidou chaves relacionadas. Próximo GET será MISS.', 'Cliente → API → PostgreSQL → API → Redis (DEL) → API → Cliente') } function timingLog(command, response) { log.push('<span class="prompt">127.0.0.1:6379&gt;</span> ' + command + '<br>' + response) } function runTiming(type) { document.querySelectorAll('.cache-card').forEach(c => c.classList.toggle('selected', c.dataset.timing === type)); let r = document.querySelector('#timingResult'); if (type === 'MISS') { kv['produto:101'] = { v: 'Notebook', exp: Date.now() + 30000 }; timingLog('GET produto:101', '(nil)'); timingLog('SET produto:101 Notebook EX 30', 'OK'); r.textContent = 'MISS · 2.000 ms simulados: consulta ao banco principal; produto armazenado no Redis por 30 s.' } if (type === 'HIT') { expireRedisKeys(); if (!kv['produto:101']) { r.textContent = 'HIT indisponível: execute MISS para preencher o cache do simulador.'; renderRedis(); return } timingLog('GET produto:101', '"Notebook"'); r.textContent = 'HIT · 15 ms simulados: resposta direta do Redis; banco principal não é consultado.' } if (type === 'EXPIRED') { delete kv['produto:101']; timingLog('GET produto:101', '(nil)  # chave expirada'); kv['produto:101'] = { v: 'Notebook', exp: Date.now() + 30000 }; timingLog('SET produto:101 Notebook EX 30', 'OK'); r.textContent = 'TTL expirado · 2.000 ms simulados: a chave foi removida e a nova consulta preencheu o cache.' } renderRedis() }
-    draw(); renderRedis();
+    draw();
   </script>
 </body>
 
