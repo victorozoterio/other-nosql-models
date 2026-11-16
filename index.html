@@ -1245,20 +1245,19 @@
         </article>
       </div>
     </section>
-    <section class="scene" data-owner="Victor" data-title="Demonstração e conclusão">
-      <div class="kicker">13 · Prática e conclusão</div>
-      <h2 class="title">Cache economiza trabalho repetido. <span>Mas exige cuidado.</span></h2>
+    <section class="scene" data-owner="Victor" data-title="Demonstração prática">
+      <div class="kicker">13 · DEMONSTRAÇÃO PRÁTICA</div>
+      <h2 class="title">Vamos ver o modelo <span>chave-valor</span> na prática?</h2>
       <div class="grid cols2">
         <article class="card reveal">
-          <div class="tag">DEMONSTRAÇÃO REAL</div>
-          <h3>Node.js + TypeScript + Express</h3>
-          <p>Rota: <span class="mono">GET /products?category=electronics&page=1&cache=true</span>.</p>
+          <h3>Aplicação real</h3>
+          <p><b>Node.js + TypeScript + Express</b></p>
+          <p>API de produtos utilizando Redis e PostgreSQL.</p>
         </article>
         <article class="card reveal">
-          <div class="tag">CONCLUSÃO</div>
-          <h3>Cache não é fonte de verdade</h3>
-          <p>TTL limita dados obsoletos; invalidação após atualização evita servir listas antigas.</p>
-          <p>Grafos para conexões · chave–valor para acesso direto · colunas largas para partições distribuídas.</p>
+          <h3>O que vamos observar?</h3>
+          <p class="mono accent"><b>BYPASS → MISS → HIT → Invalidação</b></p>
+          <p>Como o cache evita consultas repetidas e como a aplicação mantém os dados atualizados.</p>
         </article>
       </div>
     </section>
